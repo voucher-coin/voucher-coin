@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=VoucherCoin
+Comment=VoucherCoin P2P Cryptocurrency
+Comment[fr]=VoucherCoin, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=VoucherCoin, eşten eşe kriptografik sanal para birimi
+Exec=vouchercoin-qt %u
+Terminal=false
+Type=Application
+Icon=vouchercoin128
+MimeType=x-scheme-handler/vouchercoin;
+Categories=Office;Finance;

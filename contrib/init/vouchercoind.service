@@ -1,0 +1,26 @@
+[Unit]
+Description=VoucherCoin's distributed currency daemon
+After=network.target
+
+[Service]
+User=vouchercoin
+Group=vouchercoin
+
+Type=forking
+PIDFile=/var/lib/vouchercoind/vouchercoind.pid
+
+ExecStart=/usr/bin/vouchercoind -daemon -pid=/var/lib/vouchercoind/vouchercoind.pid \
+          -conf=/etc/vouchercoin/vouchercoin.conf -datadir=/var/lib/vouchercoind
+
+ExecStop=-/usr/bin/vouchercoin-cli -conf=/etc/vouchercoin/vouchercoin.conf \
+         -datadir=/var/lib/vouchercoind stop
+
+Restart=always
+PrivateTmp=true
+TimeoutStopSec=60s
+TimeoutStartSec=2s
+StartLimitInterval=120s
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target

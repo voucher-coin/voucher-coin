@@ -1,0 +1,26 @@
+# /etc/conf.d/vouchercoind: config file for /etc/init.d/vouchercoind
+
+# Config file location
+#BITCOIND_CONFIGFILE="/etc/vouchercoin/vouchercoin.conf"
+
+# What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
+#BITCOIND_PIDDIR="/var/run/vouchercoind"
+
+# What filename to give the pidfile
+#BITCOIND_PIDFILE="${BITCOIND_PIDDIR}/vouchercoind.pid"
+
+# Where to write vouchercoind data (be mindful that the blockchain is large)
+#BITCOIND_DATADIR="/var/lib/vouchercoind"
+
+# User and group to own vouchercoind process
+#BITCOIND_USER="vouchercoin"
+#BITCOIND_GROUP="vouchercoin"
+
+# Path to vouchercoind executable
+#BITCOIND_BIN="/usr/bin/vouchercoind"
+
+# Nice value to run vouchercoind under
+#BITCOIND_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+BITCOIND_OPTS=""
