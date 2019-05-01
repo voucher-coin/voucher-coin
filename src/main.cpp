@@ -63,6 +63,7 @@ CCriticalSection cs_main;
 
 BlockMap mapBlockIndex;
 map<uint256, uint256> mapProofOfStake;
+map<COutPoint, int> mapStakeSpent;
 set<pair<COutPoint, unsigned int> > setStakeSeen;
 map<unsigned int, unsigned int> mapHashedBlocks;
 CChain chainActive;
@@ -1819,34 +1820,34 @@ int64_t GetBlockValue(int nHeight)
     else if (nHeight <= 20000 && nHeight > Params().LAST_POW_BLOCK()) {
         nSubsidy = 1 * COIN;
     }
-    else if (nHeight <= 30001 && nHeight >= 20001) {
+    else if (nHeight <= 30001 && nHeight > 20000) {
         nSubsidy = 30 * COIN;
     }
-    else if (nHeight <= 530002 && nHeight >= 30002) {
+    else if (nHeight <= 530002 && nHeight > 30001) {
         nSubsidy = 2.5 * COIN;
     }
-    else if (nHeight <= 540003 && nHeight >= 530003) {
+    else if (nHeight <= 540003 && nHeight > 530002) {
         nSubsidy = 30 * COIN;
     }
-    else if (nHeight <= 1040004 && nHeight >= 540004) {
+    else if (nHeight <= 1040004 && nHeight > 540003) {
         nSubsidy = 3 * COIN;
     }
-    else if (nHeight <= 1050005 && nHeight >= 1040005) {
+    else if (nHeight <= 1050005 && nHeight > 1040004) {
         nSubsidy = 30 * COIN;
     }
-    else if (nHeight <= 1550006 && nHeight >= 1050006) {
+    else if (nHeight <= 1550006 && nHeight > 1050005) {
         nSubsidy = 2.5 * COIN;
     }
-    else if (nHeight <= 2550007 && nHeight >= 1550007) {
+    else if (nHeight <= 2550007 && nHeight > 1550006) {
         nSubsidy = 2 * COIN;
     }
-    else if (nHeight <= 5050008 && nHeight >= 2550008) {
+    else if (nHeight <= 5050008 && nHeight > 2550007) {
         nSubsidy = 1 * COIN;
     }
-    else if (nHeight <= 7550009 && nHeight >= 5050009) {
+    else if (nHeight <= 7550009 && nHeight > 5050008) {
         nSubsidy = 0.5 * COIN;
     }
-    else if (nHeight <= 10050010 && nHeight >= 7550010) {
+    else if (nHeight <= 10050010 && nHeight > 7550009) {
         nSubsidy = 0.25 * COIN;
     }
     else if (nHeight >= 10050011) {
@@ -1895,34 +1896,34 @@ int64_t GetMasternodePayment(int nHeight, int64_t blockValue, int nMasternodeCou
     else if (nHeight <= 20000 && nHeight > Params().LAST_POW_BLOCK()) {
         ret = blockValue * 0.5;
     }
-    else if (nHeight <= 30001 && nHeight >= 20001) {
+    else if (nHeight <= 30001 && nHeight > 20000) {
         ret = blockValue * 0.9;
     }
-    else if (nHeight <= 530002 && nHeight >= 30002) {
+    else if (nHeight <= 530002 && nHeight > 30001) {
         ret = blockValue * 0.8;
     }
-    else if (nHeight <= 540003 && nHeight >= 530003) {
+    else if (nHeight <= 540003 && nHeight > 530002) {
         ret = blockValue * 0.9;
     }
-    else if (nHeight <= 1040004 && nHeight >= 540004) {
+    else if (nHeight <= 1040004 && nHeight > 540003) {
         ret = blockValue * 0.9;
     }
-    else if (nHeight <= 1050005 && nHeight >= 1040005) {
+    else if (nHeight <= 1050005 && nHeight > 1040004) {
         ret = blockValue * 0.9;
     }
-    else if (nHeight <= 1550006 && nHeight >= 1050006) {
+    else if (nHeight <= 1550006 && nHeight > 1050005) {
         ret = blockValue * 0.9;
     }
-    else if (nHeight <= 2550007 && nHeight >= 1550007) {
+    else if (nHeight <= 2550007 && nHeight > 1550006) {
         ret = blockValue * 0.9;
     }
-    else if (nHeight <= 5050008 && nHeight >= 2550008) {
+    else if (nHeight <= 5050008 && nHeight > 2550007) {
         ret = blockValue * 0.9;
     }
-    else if (nHeight <= 7550009 && nHeight >= 5050009) {
+    else if (nHeight <= 7550009 && nHeight > 5050008) {
         ret = blockValue * 0.9;
     }
-    else if (nHeight <= 10050010 && nHeight >= 7550010) {
+    else if (nHeight <= 10050010 && nHeight > 7550009) {
         ret = blockValue * 0.9;
     }
     else if (nHeight >= 10050011) {
@@ -2388,6 +2389,9 @@ bool DisconnectBlock(CBlock& block, CValidationState& state, CBlockIndex* pindex
                 if (coins->vout.size() < out.n + 1)
                     coins->vout.resize(out.n + 1);
                 coins->vout[out.n] = undo.txout;
+
+                // erase the spent input
+                mapStakeSpent.erase(out);
             }
         }
     }
@@ -2985,6 +2989,27 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     if (fTxIndex)
         if (!pblocktree->WriteTxIndex(vPos))
             return state.Abort("Failed to write transaction index");
+
+    // add new entries
+    for (const CTransaction tx: block.vtx) {
+        if (tx.IsCoinBase())
+            continue;
+        for (const CTxIn in: tx.vin) {
+            LogPrint("map", "mapStakeSpent: Insert %s | %u\n", in.prevout.ToString(), pindex->nHeight);
+            mapStakeSpent.insert(std::make_pair(in.prevout, pindex->nHeight));
+        }
+    }
+
+    // delete old entries
+    for (auto it = mapStakeSpent.begin(); it != mapStakeSpent.end();) {
+        if (it->second < pindex->nHeight - Params().MaxReorganizationDepth()) {
+            LogPrint("map", "mapStakeSpent: Erase %s | %u\n", it->first.ToString(), it->second);
+            it = mapStakeSpent.erase(it);
+        }
+        else {
+            it++;
+        }
+    }
 
     // add this block to the view's block chain
     view.SetBestBlock(pindex->GetBlockHash());
@@ -4258,6 +4283,54 @@ bool AcceptBlock(CBlock& block, CValidationState& state, CBlockIndex** ppindex, 
     }
 
     int nHeight = pindex->nHeight;
+
+    if (block.IsProofOfStake()) {
+        LOCK(cs_main);
+
+        CCoinsViewCache coins(pcoinsTip);
+
+        if (!coins.HaveInputs(block.vtx[1])) {
+            // the inputs are spent at the chain tip so we should look at the recently spent outputs
+
+            for (CTxIn in : block.vtx[1].vin) {
+                auto it = mapStakeSpent.find(in.prevout);
+                if (it == mapStakeSpent.end()) {
+                    return false;
+                }
+                if (it->second <= pindexPrev->nHeight) {
+                    return false;
+                }
+            }
+        }
+
+        // if this is on a fork
+        if (!chainActive.Contains(pindexPrev) && pindexPrev != NULL) {
+            // start at the block we're adding on to
+            CBlockIndex *last = pindexPrev;
+
+            // while that block is not on the main chain
+            while (last != NULL && !chainActive.Contains(last)) {
+                CBlock bl;
+                ReadBlockFromDisk(bl, last);
+                // loop through every spent input from said block
+                for (CTransaction t : bl.vtx) {
+                    for (CTxIn in: t.vin) {
+                        // loop through every spent input in the staking transaction of the new block
+                        for (CTxIn stakeIn : block.vtx[1].vin) {
+                            // if they spend the same input
+                            if (stakeIn.prevout == in.prevout) {
+                                // reject the block
+                                return false;
+                            }
+                        }
+                    }
+                }
+
+                // go to the parent block
+                last = last->pprev;
+            }
+        }
+    }
 
     // Write block to history file
     try {
