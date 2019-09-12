@@ -53,13 +53,14 @@ static void convertSeed6(std::vector<CAddress>& vSeedsOut, const SeedSpec6* data
 // + Contains no strange transactions
 static Checkpoints::MapCheckpoints mapCheckpoints =
     boost::assign::map_list_of
-    (0, uint256("00000020446930fd9b83f28abd46be13a77362e7c82509b8b631d9176c90fe40"));
+    (0, uint256("00000020446930fd9b83f28abd46be13a77362e7c82509b8b631d9176c90fe40"))
+    (200000, uint256("039776f81f97c62b2751eb7256cff3045fbd1f0ed540c20641676965ecdc0894"));
 static const Checkpoints::CCheckpointData data = {
     &mapCheckpoints,
-    1550419516, // * UNIX timestamp of last checkpoint block
+    1568287149, // * UNIX timestamp of last checkpoint block
     0,    // * total number of transactions between genesis and last checkpoint
                 //   (the tx=... number in the SetBestChain debug.log lines)
-    0        // * estimated number of transactions per day after checkpoint
+    2000        // * estimated number of transactions per day after checkpoint
 };
 
 static Checkpoints::MapCheckpoints mapCheckpointsTestnet =
@@ -173,6 +174,14 @@ public:
 
         vSeeds.push_back(CDNSSeedData("voucher-co.in", "node1.voucher-co.in"));
         vSeeds.push_back(CDNSSeedData("n2.voucher-co.in", "node2.voucher-co.in"));
+        vSeeds.push_back(CDNSSeedData("n3.voucher-co.in", "node3.voucher-co.in"));
+        vSeeds.push_back(CDNSSeedData("n4.voucher-co.in", "node4.voucher-co.in"));
+        vSeeds.push_back(CDNSSeedData("n5.voucher-co.in", "node5.voucher-co.in"));
+        vSeeds.push_back(CDNSSeedData("n6.voucher-co.in", "node6.voucher-co.in"));
+        vSeeds.push_back(CDNSSeedData("n7.voucher-co.in", "node7.voucher-co.in"));
+        vSeeds.push_back(CDNSSeedData("n8.voucher-co.in", "node8.voucher-co.in"));
+        vSeeds.push_back(CDNSSeedData("n9.voucher-co.in", "node9.voucher-co.in"));
+        vSeeds.push_back(CDNSSeedData("n10.voucher-co.in", "node10.voucher-co.in"));
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 70);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 71);
