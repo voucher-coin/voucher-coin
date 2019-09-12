@@ -209,8 +209,8 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
         nWatchOnlyLockedBalance = pwalletMain->GetLockedWatchOnlyBalance();
     }
     // VCO Balance
-    CAmount nTotalBalance = balance + unconfirmedBalance + nLockedBalance;
-    CAmount vcoAvailableBalance = balance - immatureBalance;
+    CAmount nTotalBalance = balance + unconfirmedBalance;
+    CAmount vcoAvailableBalance = balance - immatureBalance - nLockedBalance;
     CAmount nTotalWatchBalance = watchOnlyBalance + watchUnconfBalance + watchImmatureBalance;    
     CAmount nUnlockedBalance = nTotalBalance - nLockedBalance - nLockedBalance; // increment nLockedBalance twice because it was added to
                                                                                 // nTotalBalance above
