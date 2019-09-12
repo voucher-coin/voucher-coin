@@ -730,7 +730,7 @@
 	</message>
 	<message>
 		<source>Show the VoucherCoin Core help message to get a list with possible VoucherCoin command-line options</source>
-		<translation>Смотрите помощь к программе, чтобы получить документацию ко всем возможным опциям комманды VoucherCoin</translation>
+		<translation>Смотрите помощь к программе, чтобы получить документацию ко всем возможным опциям команды VoucherCoin</translation>
 	</message>
 	<message>
 		<source>VoucherCoin Core client</source>
@@ -2053,7 +2053,7 @@ https://www.transifex.com/vouchercoin-project/vouchercoin-project-translations</
 	</message>
 	<message>
 		<source>Active command-line options that override above options:</source>
-		<translation>Активные опции коммандной строки, которые переписывают опции выше:</translation>
+		<translation>Активные опции командной строки, которые переписывают опции выше:</translation>
 	</message>
 	<message>
 		<source>Reset all client options to default.</source>
@@ -3176,11 +3176,11 @@ Either mint higher denominations (so fewer inputs are needed) or reduce the amou
 	</message>
 	<message>
 		<source>&amp;Console</source>
-		<translation>&amp;Коммандая строка</translation>
+		<translation>&amp;Командная строка</translation>
 	</message>
 	<message>
 		<source>Clear console</source>
-		<translation>Очистить коммандную строку</translation>
+		<translation>Очистить командную строку</translation>
 	</message>
 	<message>
 		<source>&amp;Network Traffic</source>
