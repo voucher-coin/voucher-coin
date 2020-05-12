@@ -1809,54 +1809,46 @@ double ConvertBitsToDouble(unsigned int nBits)
 int64_t GetBlockValue(int nHeight)
 {
     int64_t nSubsidy = 0;
-
-    if (nHeight == 0) {
+       unsigned int nPhase = 0;
+    if (nHeight == 0)
         nSubsidy = 4650000 * COIN;
+   
+    if (nHeight < Params().LAST_POW_BLOCK()) nPhase = 1;
+	if (nHeight > Params().LAST_POW_BLOCK() && nHeight < 20000)  nPhase = 2;
+	if (nHeight > 20000  && nHeight < 30001)  nPhase = 3;
+	if (nHeight > 30001  && nHeight < 530002)  nPhase = 4;
+	if (nHeight > 530002  && nHeight < 540003)  nPhase = 5;
+	if (nHeight > 540003  && nHeight < 1040004)  nPhase = 6;
+	if (nHeight > 1040004  && nHeight < 1050005)  nPhase = 7;
+	if (nHeight > 1050005  && nHeight < 1550006)  nPhase = 8;
+	if (nHeight > 1550006  && nHeight < 2550007)  nPhase = 9;
+	if (nHeight > 2550007  && nHeight < 5050008)  nPhase = 10;
+	if (nHeight > 5050008  && nHeight < 7550009)  nPhase = 11;
+	if (nHeight > 7550009  && nHeight < 10050010)  nPhase = 12;
+	if (nHeight > 10050010)  nPhase = 13;
+	
+	switch (nPhase) {
+        case 1: nSubsidy = 1 * COIN; break;
+        case 2: nSubsidy = 1 * COIN; break;
+        case 3: nSubsidy = 30 * COIN; break;
+        case 4: nSubsidy = 2.5 * COIN; break;
+        case 5: nSubsidy = 30 * COIN; break;
+        case 6: nSubsidy = 3 * COIN; break;
+        case 7: nSubsidy = 30 * COIN; break;
+        case 8: nSubsidy = 2.5 * COIN; break;
+        case 9: nSubsidy = 2 * COIN; break;
+        case 10: nSubsidy = 1 * COIN; break;
+		case 11: nSubsidy = 0.5 * COIN; break;
+		case 12: nSubsidy = 0.25 * COIN; break;
+		case 13: nSubsidy = 0.01 * COIN; break;
+		default: nSubsidy = 1 * COIN;
+
     }
 
-    if (nHeight <= Params().LAST_POW_BLOCK() && nHeight > 0) {
-        nSubsidy = 1 * COIN;
+	if (fDebug) {
+        LogPrintf("%s - currently in nPhase %d, blockreward %llu VCO\n",
+                  __func__, nPhase, nSubsidy);
     }
-    else if (nHeight <= 20000 && nHeight > Params().LAST_POW_BLOCK()) {
-        nSubsidy = 1 * COIN;
-    }
-    else if (nHeight <= 30001 && nHeight > 20000) {
-        nSubsidy = 30 * COIN;
-    }
-    else if (nHeight <= 530002 && nHeight > 30001) {
-        nSubsidy = 2.5 * COIN;
-    }
-    else if (nHeight <= 540003 && nHeight > 530002) {
-        nSubsidy = 30 * COIN;
-    }
-    else if (nHeight <= 1040004 && nHeight > 540003) {
-        nSubsidy = 3 * COIN;
-    }
-    else if (nHeight <= 1050005 && nHeight > 1040004) {
-        nSubsidy = 30 * COIN;
-    }
-    else if (nHeight <= 1550006 && nHeight > 1050005) {
-        nSubsidy = 2.5 * COIN;
-    }
-    else if (nHeight <= 2550007 && nHeight > 1550006) {
-        nSubsidy = 2 * COIN;
-    }
-    else if (nHeight <= 5050008 && nHeight > 2550007) {
-        nSubsidy = 1 * COIN;
-    }
-    else if (nHeight <= 7550009 && nHeight > 5050008) {
-        nSubsidy = 0.5 * COIN;
-    }
-    else if (nHeight <= 10050010 && nHeight > 7550009) {
-        nSubsidy = 0.25 * COIN;
-    }
-    else if (nHeight >= 10050011) {
-        nSubsidy = 0.01 * COIN;
-    }
-    else {
-        nSubsidy = 1 * COIN;
-    }
-
     return nSubsidy;
 }
 
@@ -1887,56 +1879,39 @@ CAmount GetSeeSaw(const CAmount& blockValue, int nMasternodeCount, int nHeight)
 int64_t GetMasternodePayment(int nHeight, int64_t blockValue, int nMasternodeCount, bool isZVCOStake)
 {
     int64_t ret = 0;
-
-    if (Params().NetworkID() == CBaseChainParams::TESTNET) {
-        if (nHeight < 200)
-            return 0;
+    unsigned int nPhase = 0;
+      
+    if (nHeight < Params().LAST_POW_BLOCK()) nPhase = 1;
+	if (nHeight > Params().LAST_POW_BLOCK() && nHeight < 20000)  nPhase = 2;
+	if (nHeight > 20000  && nHeight < 30001)  nPhase = 3;
+	if (nHeight > 30001  && nHeight < 530002)  nPhase = 4;
+	if (nHeight > 530002  && nHeight < 540003)  nPhase = 5;
+	if (nHeight > 540003  && nHeight < 1040004)  nPhase = 6;
+	if (nHeight > 1040004  && nHeight < 1050005)  nPhase = 7;
+	if (nHeight > 1050005  && nHeight < 1550006)  nPhase = 8;
+	if (nHeight > 1550006  && nHeight < 2550007)  nPhase = 9;
+	if (nHeight > 2550007  && nHeight < 5050008)  nPhase = 10;
+	if (nHeight > 5050008  && nHeight < 7550009)  nPhase = 11;
+	if (nHeight > 7550009  && nHeight < 10050010)  nPhase = 12;
+	if (nHeight > 10050010)  nPhase = 13;
+	
+	switch (nPhase) {
+        case 1: ret = blockValue * 0; break;
+        case 2: ret = blockValue * 0.5; break;
+        case 3: ret = blockValue * 0.9; break;
+        case 4: ret = blockValue * 0.8; break;
+        case 5: ret = blockValue * 0.9; break;
+        case 6: ret = blockValue * 0.9; break;
+        case 7: ret = blockValue * 0.9; break;
+        case 8: ret = blockValue * 0.9; break;
+        case 9: ret = blockValue * 0.9; break;
+        case 10: ret = blockValue * 0.9; break;
+		case 11: ret = blockValue * 0.9; break;
+		case 12: ret = blockValue * 0.9; break;
+		case 13: ret = blockValue * 0.9; break;
+		default: ret = blockValue * 0.9;
     }
-
-    if (nHeight <= Params().LAST_POW_BLOCK()) {
-        return 0;
-    }
-    else if (nHeight <= 20000 && nHeight > Params().LAST_POW_BLOCK()) {
-        ret = blockValue * 0.5;
-    }
-    else if (nHeight <= 30001 && nHeight > 20000) {
-        ret = blockValue * 0.9;
-    }
-    else if (nHeight <= 530002 && nHeight > 30001) {
-        ret = blockValue * 0.8;
-    }
-    else if (nHeight <= 540003 && nHeight > 530002) {
-        ret = blockValue * 0.9;
-    }
-    else if (nHeight <= 1040004 && nHeight > 540003) {
-        ret = blockValue * 0.9;
-    }
-    else if (nHeight <= 1050005 && nHeight > 1040004) {
-        ret = blockValue * 0.9;
-    }
-    else if (nHeight <= 1550006 && nHeight > 1050005) {
-        ret = blockValue * 0.9;
-    }
-    else if (nHeight <= 2550007 && nHeight > 1550006) {
-        ret = blockValue * 0.9;
-    }
-    else if (nHeight <= 5050008 && nHeight > 2550007) {
-        ret = blockValue * 0.9;
-    }
-    else if (nHeight <= 7550009 && nHeight > 5050008) {
-        ret = blockValue * 0.9;
-    }
-    else if (nHeight <= 10050010 && nHeight > 7550009) {
-        ret = blockValue * 0.9;
-    }
-    else if (nHeight >= 10050011) {
-        ret = blockValue * 0.9;
-    }
-    else {
-        ret = blockValue * 0.9;
-    }
-
-    return ret;
+            return ret;
 }
 
 bool IsInitialBlockDownload()
