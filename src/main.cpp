@@ -1841,7 +1841,7 @@ int64_t GetBlockValue(int nHeight)
 		case 11: nSubsidy = 0.5 * COIN; break;
 		case 12: nSubsidy = 0.25 * COIN; break;
 		case 13: nSubsidy = 0.01 * COIN; break;
-		default: nSubsidy = 1 * COIN;
+		default: nSubsidy = 30 * COIN;
 
     }
 
