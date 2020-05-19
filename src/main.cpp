@@ -1841,7 +1841,7 @@ int64_t GetBlockValue(int nHeight)
 		case 11: nSubsidy = 0.5 * COIN; break;
 		case 12: nSubsidy = 0.25 * COIN; break;
 		case 13: nSubsidy = 0.01 * COIN; break;
-		default: nSubsidy = 30 * COIN;
+		default: nSubsidy = 1 * COIN;
 
     }
 
@@ -2887,13 +2887,10 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs - 1), nTimeConnect * 0.000001);
 
-    //PoW phase redistributed fees to miner. PoS stage destroys fees.
-    CAmount nExpectedMint = GetBlockValue(pindex->pprev->nHeight);
-    if (block.IsProofOfWork())
-        nExpectedMint += nFees;
 
     //Check that the block does not overmint
-    if (!IsBlockValueValid(block, nExpectedMint, pindex->nMint)) {
+if (!IsBlockValueValid(block, pindex, nFees)) {
+        CAmount nExpectedMint = GetBlockValue(pindex->pprev->nHeight);
         return state.DoS(100, error("ConnectBlock() : reward pays too much (actual=%s vs limit=%s)",
                                     FormatMoney(pindex->nMint), FormatMoney(nExpectedMint)),
                          REJECT_INVALID, "bad-cb-amount");

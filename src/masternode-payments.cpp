@@ -173,7 +173,7 @@ void DumpMasternodePayments()
     LogPrint("masternode","Budget dump finished  %dms\n", GetTimeMillis() - nStart);
 }
 
-bool IsBlockValueValid(const CBlock& block, CAmount nExpectedValue, CAmount nMinted)
+bool IsBlockValueValid(const CBlock& block, const CBlockIndex* pindex, CAmount nFees)
 {
     CBlockIndex* pindexPrev = chainActive.Tip();
     if (pindexPrev == NULL) return true;
@@ -190,36 +190,26 @@ bool IsBlockValueValid(const CBlock& block, CAmount nExpectedValue, CAmount nMin
     if (nHeight == 0) {
         LogPrint("masternode","IsBlockValueValid() : WARNING: Couldn't find previous block\n");
     }
+    CAmount nMinted = pindex->nMint;
+    CAmount nExpectedMint = GetBlockValue(pindex->pprev->nHeight);
+    if(block.IsProofOfWork())
+        nExpectedMint += nFees;
+    
+    bool isBudgetPaymentBlock = IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS) && budget.IsBudgetPaymentBlock(nHeight);
+    bool isMintAcceptable = nMinted <= nExpectedMint;
 
-    //LogPrintf("XX69----------> IsBlockValueValid(): nMinted: %d, nExpectedValue: %d\n", FormatMoney(nMinted), FormatMoney(nExpectedValue));
+    if (!masternodeSync.IsSynced() && (nHeight % GetBudgetPaymentCycleBlocks() < 100))
+       return true;
 
-    if (!masternodeSync.IsSynced()) { //there is no budget data to use to check anything
-        //super blocks will always be on these blocks, max 100 per budgeting
-        if (nHeight % GetBudgetPaymentCycleBlocks() < 100) {
-            return true;
-        } else {
-            if (nMinted > nExpectedValue) {
-                return false;
-            }
-        }
-    } else { // we're synced and have data so check the budget schedule
+    if(isMintAcceptable || isBudgetPaymentBlock)
+       return true;
+   
+     nExpectedMint = GetBlockValue(pindex->nHeight);
 
-        //are these blocks even enabled
-        if (!IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS)) {
-            return nMinted <= nExpectedValue;
-        }
-
-        if (budget.IsBudgetPaymentBlock(nHeight)) {
-            //the value of the block is evaluated in CheckBlock
-            return true;
-        } else {
-            if (nMinted > nExpectedValue) {
-                return false;
-            }
-        }
-    }
-
-    return true;
+    if(block.IsProofOfWork())
+        nExpectedMint += nFees;
+   isMintAcceptable = (nMinted <= nExpectedMint) && !isBudgetPaymentBlock;
+      return isMintAcceptable;
 }
 
 bool IsBlockPayeeValid(const CBlock& block, int nBlockHeight)
